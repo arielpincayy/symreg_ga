@@ -14,11 +14,13 @@ using namespace std;
 /**
  * @brief Types of operators
  */
-enum OperatorType { ADD, SUB, MUL, DIV, SIN, COS, POW, LOG };
+enum OperatorType { ADD, SUB, MUL, DIV, SIN, COS, ABS, POW, LOG, EXP, NOP };
 
 extern __device__ __constant__ OperatorType d_operators[];
+
+#define MAX_VALUES 256
                                   
-const int NUM_OPERATORS = 8;
+const int NUM_OPERATORS = 9;
 const float MIN_CONST = -1.0f;
 const float MAX_CONST = 1.0f;
 
@@ -51,6 +53,9 @@ public:
      */
     __device__ 
     Individual(int len, int nleaves, int h, int n_vars, curandState *localState, OperatorType *poolOP, int *poolTerminals, float *poolConsts);
+    
+    __device__
+    Individual(int len, int nleaves, int h, int n_vars, OperatorType *poolOP, int *poolTerminals, float *poolConsts);
 
 private:
     /**
@@ -61,8 +66,6 @@ private:
      */
     __device__ 
     float fun(float a, float b, OperatorType op);
-
-    static std::string build_expression_rec(int node_idx, int n_leaves, OperatorType *ops, int *terminals, float *consts);
 
 public:
     /**
@@ -86,16 +89,22 @@ public:
      * @param other Individual to copy.
      * @return Copy of the original individual.
      */
-
     __device__ 
     void clone_from(const Individual &parent, OperatorType *my_op, int *my_terminals, float *my_constants);
 
-    /**
-     * @brief Build a human-readable expression for an individual.
-     * @return Expression as string.
-     */
 
-    static std::string build_expression(OperatorType *ops, int *terminals, float *consts, int n_leaves);
+    /**
+     * @brief 
+     * 
+     * @param A Individual A.
+     * @param B Individual B.
+     * @param poolOp Pool Operation memory.
+     * @param poolTerminals Pool Terminals Memory.
+     * @param poolConsts Pool Constants Memory.
+     * @return Individual
+     */
+    __device__
+    static Individual crossover(Individual *A, Individual *B, OperatorType *poolOp, int *poolTerminals, float *poolConsts);
 };
 
 #endif // INDIVIDUAL_CUH
