@@ -10,13 +10,44 @@
 #include <sstream>
 
 
+/**
+ * @brief Container structure for the best individual's genetic information.
+ * 
+ * This structure encapsulates the complete genome and fitness of the winning
+ * individual from the genetic algorithm. It serves as the return type for
+ * the main symbolic regression function, allowing easy access to the evolved
+ * solution's components.
+ * 
+ * The structure contains pointers to host memory arrays that describe the
+ * binary tree representation of the mathematical expression.
+ * 
+ * @note All pointer members reference host memory, not device memory
+ * @note Memory ownership: Caller must allocate arrays before passing to genetic_sym()
+ * @note Array sizes: operations[n_leaves-1], terminals[n_leaves], consts[n_leaves]
+ * 
+ * @see genetic_sym
+ * @see Individual
+ * 
+ * @code
+ * int n_leaves = pow(2, height - 1);
+ * OperatorType *ops = (OperatorType*)malloc((n_leaves-1) * sizeof(OperatorType));
+ * int *terms = (int*)malloc(n_leaves * sizeof(int));
+ * float *consts = (float*)malloc(n_leaves * sizeof(float));
+ * 
+ * Operation best = genetic_sym(X, y, ..., ops, consts, terms);
+ * 
+ * cout << "Best fitness: " << best.fitness << endl;
+ * string expr = build_expression(best.operations, best.terminals, best.consts, n_leaves);
+ * 
+ * free(ops); free(terms); free(consts);
+ * @endcode
+ */
 struct Operation{
     OperatorType *operations;
     int *terminals;
     float *consts;
     float fitness;
 };
-
 /**
  * @brief Executes the main Symbolic Regression engine using Genetic Programming on GPU.
  * * This function coordinates the full evolutionary cycle: initializes the population in VRAM,
