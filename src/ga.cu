@@ -80,16 +80,21 @@ __global__ void tournament_selection(Individual *old_pop, Individual *new_pop, i
     states[idx] = localState;
 }
 
-__global__ void crossover(Individual *population, Individual *children, int population_size, curandState *states, int n_childs, OperatorType *poolOP, int *poolTerminals, 
+__global__ void crossover(Individual *population, Individual *children, int population_size, curandState *states, float reproduc_rate, OperatorType *poolOP, int *poolTerminals, 
                           float *poolConsts, int n_ops, int n_leaves, int n_vars) {
     size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if(idx >= population_size) return;
-    if(idx >= n_childs){
+
+
+    curandState localState = states[idx];
+
+
+    if(curand_uniform(&localState) < reproduc_rate){
         children[idx].clone_from(population[idx], &poolOP[idx * n_ops], &poolTerminals[idx * n_leaves], &poolConsts[idx * n_leaves]);
+        states[idx] = localState;
         return;
     }
 
-    curandState localState = states[idx];
     
     int parentA_idx = curand(&localState) % population_size;
     int parentB_idx = curand(&localState) % population_size;
@@ -97,7 +102,7 @@ __global__ void crossover(Individual *population, Individual *children, int popu
     Individual *A = &population[parentA_idx]; 
     Individual *B = &population[parentB_idx];
 
-    children[idx] = Individual::crossover(A, B, &poolOP[idx * n_ops], &poolTerminals[idx * n_leaves], &poolConsts[idx * n_leaves]);
+    children[idx] = Individual::crossover(A, B, &localState, &poolOP[idx * n_ops], &poolTerminals[idx * n_leaves], &poolConsts[idx * n_leaves]);
     
     states[idx] = localState;
 }

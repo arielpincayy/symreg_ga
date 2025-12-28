@@ -1,6 +1,6 @@
 #include <ga_symreg.cuh>
 
-Operation genetic_sym(float *X, float *y, int sizeX, int sizey, int n_generations, int n_individuals, int height, int n_vars, int tournament_size, int n_childs,
+Operation genetic_sym(float *X, float *y, int sizeX, int sizey, int n_generations, int n_individuals, int height, int n_vars, int tournament_size, float reproduc_rate,
                       float mut_rate, float random_rate, int windowsize, bool write_indiv, OperatorType *best_operations, float *best_consts, int *best_terminals){
     int n_leaves = powf(2, height - 1);
     int n_ops = n_leaves - 1;
@@ -96,7 +96,7 @@ Operation genetic_sym(float *X, float *y, int sizeX, int sizey, int n_generation
             d_output_A, 
             n_individuals, 
             d_states, 
-            n_childs,
+            reproduc_rate,
             d_poolOP_A, 
             d_poolTerminals_A, 
             d_poolConsts_A, 

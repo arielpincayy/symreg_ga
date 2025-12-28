@@ -119,7 +119,7 @@ __global__ void tournament_selection(Individual *old_pop, Individual *new_pop, i
  * @param children Output array for offspring
  * @param population_size Number of parents
  * @param states Random number generator states
- * @param n_childs Number of children to generate via crossover
+ * @param reproduc_rate Crossover probability
  * @param poolOP Destination memory pool for operators
  * @param poolTerminals Destination memory pool for terminals
  * @param poolConsts Destination memory pool for constants (typo in original: poolCOnsts)
@@ -129,7 +129,7 @@ __global__ void tournament_selection(Individual *old_pop, Individual *new_pop, i
  * 
  * @note Crossover uses fixed midpoint split
  */
-__global__ void crossover(Individual *population, Individual *children, int population_size, curandState *states, int n_childs, OperatorType *poolOP, int *poolTerminals,
+__global__ void crossover(Individual *population, Individual *children, int population_size, curandState *states, float reproduc_rate, OperatorType *poolOP, int *poolTerminals,
                           float *poolConsts, int n_ops, int n_leaves, int n_vars);
 
 /**

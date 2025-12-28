@@ -104,7 +104,7 @@ public:
      * @return Individual
      */
     __device__
-    static Individual crossover(Individual *A, Individual *B, OperatorType *poolOp, int *poolTerminals, float *poolConsts);
+    static Individual crossover(Individual *A, Individual *B, curandState *localState, OperatorType *poolOp, int *poolTerminals, float *poolConsts);
 };
 
 #endif // INDIVIDUAL_CUH

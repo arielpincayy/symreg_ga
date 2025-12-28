@@ -62,8 +62,8 @@ struct Operation{
  * @param n_individuals Population size (total number of individuals).
  * @param height Maximum allowed height for the expression trees.
  * @param n_vars Number of input variables (e.g., 3 for x0, x1, x2).
- * @param tournament_size Number of individuals competing in each tournament selection.
- * @param n_childs Number of children generated during the crossover phase.
+ * @param tournament_size Crossover probability.
+ * @param reproduc_rate Number of children generated during the crossover phase.
  * @param mut_rate Mutation probability (value between 0.0 and 1.0).
  * @param random_rate Immigration rate (percentage of new random individuals per generation).
  * @param windowsize Size of the fitness window used for stagnation detection.
@@ -73,7 +73,7 @@ struct Operation{
  * @param best_terminals [Out] Host buffer to store the winning individual's variables.
  * @return Operation Structure containing the best fitness and pointers to the winner's genes.
  */
-Operation genetic_sym(float *X, float *y, int sizeX, int sizey, int n_generations, int n_individuals, int height, int n_vars, int tournament_size, int n_childs,
+Operation genetic_sym(float *X, float *y, int sizeX, int sizey, int n_generations, int n_individuals, int height, int n_vars, int tournament_size, float reproduc_rate,
                       float mut_rate, float random_rate, int windowsize, bool write_indiv, OperatorType *best_operations, float *best_consts, int *best_terminals);
 
 

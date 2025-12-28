@@ -142,13 +142,14 @@ void Individual::mutate(int n_mutate, curandState *localState){
 }
 
 __device__
-Individual Individual::crossover(Individual *A, Individual *B, OperatorType *poolOp, int *poolTerminals, float *poolConsts) {
+Individual Individual::crossover(Individual *A, Individual *B, curandState *localState, OperatorType *poolOp, int *poolTerminals, float *poolConsts) {
     Individual child(A->length, A->n_leaves, A->height, A->nvars, poolOp, poolTerminals, poolConsts);
     
     int n_ops = A->n_leaves - 1;
-    int cut_op = n_ops / 2; 
-    int cut_leaf = A->n_leaves / 2;
+    int cut_op = curand(localState) % (n_ops + 1);
+    int cut_leaf = curand(localState) % (A->n_leaves + 1);
 
+    
     for(int i = 0; i < n_ops; i++){
         child.genome.op[i] = (i < cut_op) ? A->genome.op[i] : B->genome.op[i];
     }
