@@ -54,7 +54,7 @@ std::string build_expression_rec(int node_idx, int n_leaves, OperatorType *ops, 
         case COS: return std::string("cos(") + left_s + ")";
         case ABS: return std::string("|") + left_s + "|";
         case EXP: return std::string("exp(") + left_s + ")";
-        case LOG: return std::string("log(") + left_s + ")";
+        case LOG: return std::string("log(|") + left_s + "|)";
         case NOP: return left_s;
         default: return left_s;
     }

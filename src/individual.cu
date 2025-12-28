@@ -4,6 +4,20 @@ using namespace std;
 
 __device__ __constant__ OperatorType d_operators[] = { ADD, SUB, MUL, DIV, SIN, COS, ABS, POW, LOG, EXP, NOP };
 
+__device__ __constant__ float d_cdf_ops[] = {
+    0.24f, // ADD (0.24)
+    0.48f, // SUB (0.24 + 0.24)
+    0.72f, // MUL (0.48 + 0.24)
+    0.96f, // DIV (0.72 + 0.24)
+    0.96f, // SIN (Probabilidad 0: el salto es cero)
+    0.96f, // COS (Probabilidad 0)
+    0.96f, // ABS (Probabilidad 0)
+    0.96f, // POW (Probabilidad 0)
+    0.96f, // LOG (Probabilidad 0)
+    0.96f, // EXP (Probabilidad 0)
+    1.00f  // NOP (0.96 + 0.04)
+};
+
 __device__ 
 Individual::Individual(int len, int nleaves, int h, int n_vars, curandState *localState, OperatorType *poolOP, int *poolTerminals, float *poolConsts){
     height = h;
@@ -13,12 +27,13 @@ Individual::Individual(int len, int nleaves, int h, int n_vars, curandState *loc
     n_leaves = nleaves;
     int n_ops = n_leaves - 1;
 
+
     genome.op = poolOP;
     genome.terminals = poolTerminals;
     genome.constants = poolConsts;
 
     for (int i = 0; i < n_ops; i++) {
-        genome.op[i] = d_operators[curand(localState) % NUM_OPERATORS];
+        genome.op[i] = d_operators[weighted_selection(localState, d_cdf_ops, NUM_OPERATORS)];
     }
 
     float prob_variable = 0.5f;
@@ -54,7 +69,16 @@ Individual::Individual(int len, int nleaves, int h, int n_vars, OperatorType *po
     genome.terminals = poolTerminals;
 }
 
-
+__device__ int Individual::weighted_selection(curandState *state, float *cdf, int num_elements) {
+    float r = curand_uniform(state);
+    for (int i = 0; i < num_elements; i++) {
+        if (r < cdf[i]) {
+            return i;
+        }
+    }
+    
+    return num_elements - 1;
+}
 
 __device__ 
 float Individual::fun(float a, float b, OperatorType op){
@@ -66,15 +90,13 @@ float Individual::fun(float a, float b, OperatorType op){
         if (a < 0 && fabsf(b - roundf(b)) > 1e-6) return 0.0f;
         return powf(a, b);
         case DIV:
-        if (b == 0.0f) return 1.0f;
+        if (fabsf(b) < 1e-6f) return INFINITY;
         return a / b;
         case SIN: return sinf(a);
         case COS: return cosf(a);
         case ABS: return fabs(a);
         case EXP: return expf(a);
-        case LOG:
-            if (a < 0.0f) return 0.0f;
-        return log(a);
+        case LOG: return log(fabs(a));
         case NOP: return a;
         default: return a;
     } 
@@ -124,7 +146,7 @@ void Individual::mutate(int n_mutate, curandState *localState){
         op   = curand(localState) % (n_leaves - 1);
 
         if (p < 0.33f) {
-            genome.op[op] = d_operators[curand(localState) % NUM_OPERATORS];
+            genome.op[op] = d_operators[weighted_selection(localState, d_cdf_ops, NUM_OPERATORS)];
         }
         else if (p < 0.66f) {
             float noise = curand_normal(localState) * sigma;

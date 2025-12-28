@@ -68,13 +68,10 @@ struct Operation{
  * @param random_rate Immigration rate (percentage of new random individuals per generation).
  * @param windowsize Size of the fitness window used for stagnation detection.
  * @param write_indiv Boolean flag to enable/disable logging population to disk.
- * @param best_operations [Out] Host buffer to store the winning individual's operators.
- * @param best_consts [Out] Host buffer to store the winning individual's constants.
- * @param best_terminals [Out] Host buffer to store the winning individual's variables.
  * @return Operation Structure containing the best fitness and pointers to the winner's genes.
  */
 Operation genetic_sym(float *X, float *y, int sizeX, int sizey, int n_generations, int n_individuals, int height, int n_vars, int tournament_size, float reproduc_rate,
-                      float mut_rate, float random_rate, int windowsize, bool write_indiv, OperatorType *best_operations, float *best_consts, int *best_terminals);
+                      float mut_rate, float random_rate, int windowsize, bool write_indiv);
 
 
 

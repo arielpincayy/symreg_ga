@@ -1,13 +1,17 @@
 #include <ga_symreg.cuh>
 
 Operation genetic_sym(float *X, float *y, int sizeX, int sizey, int n_generations, int n_individuals, int height, int n_vars, int tournament_size, float reproduc_rate,
-                      float mut_rate, float random_rate, int windowsize, bool write_indiv, OperatorType *best_operations, float *best_consts, int *best_terminals){
+                      float mut_rate, float random_rate, int windowsize, bool write_indiv){
     int n_leaves = powf(2, height - 1);
     int n_ops = n_leaves - 1;
     int length = powf(2, height) - 1;
     unsigned long long seed = time(NULL);
     int numThreadPerBlock = 256;
     int numBlocks = (n_individuals + numThreadPerBlock - 1) / numThreadPerBlock;
+
+    OperatorType *best_operations = (OperatorType *)malloc((n_leaves - 1) * sizeof(OperatorType));
+    int *best_terminals = (int *)malloc(n_leaves * sizeof(int));
+    float *best_consts = (float *)malloc(n_leaves * sizeof(float));
 
     Individual *h_population = (Individual *)malloc(n_individuals * sizeof(Individual));
     Individual *d_output_B;

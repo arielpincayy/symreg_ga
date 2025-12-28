@@ -17,6 +17,7 @@ using namespace std;
 enum OperatorType { ADD, SUB, MUL, DIV, SIN, COS, ABS, POW, LOG, EXP, NOP };
 
 extern __device__ __constant__ OperatorType d_operators[];
+extern __device__ __constant__ float d_cdf_ops[];
 
 #define MAX_VALUES 256
                                   
@@ -66,6 +67,16 @@ private:
      */
     __device__ 
     float fun(float a, float b, OperatorType op);
+
+    /**
+     * @brief Selects an index from a probability distribution.
+     * * @param state Pointer to the curandState for the current thread.
+     * @param cdf Array of cumulative probabilities (must end in 1.0).
+     * @param num_elements Size of the cdf array.
+     * @return int The selected index.
+     */
+    __device__ 
+    int weighted_selection(curandState *state, float *cdf, int num_elements);
 
 public:
     /**

@@ -15,7 +15,10 @@ __device__ float eval(Individual *population, int sizeX, int sizey, int idx, flo
         diff += e*e;
     }
 
-    return sqrtf(diff);
+    float res = sqrtf(diff/sizey);
+    if(isnan(res)) return INFINITY;
+
+    return res;
 }
 
 __global__ void create_population(Individual *output, int population_size, float *X, float *y, curandState *states, OperatorType *poolOP, 
