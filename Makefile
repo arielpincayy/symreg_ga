@@ -5,7 +5,7 @@ INCLUDE_DIRS = -I./include
 
 # Directories
 SRC_DIR = src
-OBJ_DIR = output
+OBJ_DIR = obj
 BIN_DIR = bin
 
 # Source files

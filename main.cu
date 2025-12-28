@@ -19,11 +19,16 @@ int main(int argc, char **argv) {
     bool write_indiv = atoi(argv[9]);
 
     int windowsize = 20;
-    int sizeX = 21;
-    int sizey = 7;
+    int sizey = 4096;          // 10,000 muestras
+    int sizeX = sizey * n_vars;
+
+    // 1. MEMORIA DINÁMICA: Para 10,000 muestras es mejor usar malloc
+    // El stack de la CPU suele ser limitado y podría dar un "Stack Overflow"
+    float *X = (float*)malloc(sizeX * sizeof(float));
+    float *y = (float*)malloc(sizey * sizeof(float));
 
     // Test values. 15 samples x 3 variables (rows):
-    float X[] = {
+    /*float X[] = {
         0.1f, 0.2f, 0.3f,
         0.5f, 1.0f, 2.0f,
         1.5f, 2.0f, 3.0f,
@@ -31,19 +36,38 @@ int main(int argc, char **argv) {
         0.0f, -1.0f, 0.5f,
         3.0f, 2.0f, 1.0f,
         4.0f, 0.5f, -0.5f
-    };
-    
+    };*/
 
-    float y[sizey]; 
-    for(int i = 0; i < sizey; i++){
-        int base = i * 3;
+    int base;
+    
+    for (int i = 0; i < sizey; i++) {
+        base = i * n_vars;
+        // Generamos un rango de -2.5 a 2.5 para x0 y x1
+        X[base + 0] = -5.0f + (10.0f * i / sizey); 
+        X[base + 1] = -5.0f + (10.0f * i / (sizey/2)); // Diferente frecuencia para y
         
+        // Inicializar variables extra si n_vars > 2
+        for(int v = 2; v < n_vars; v++) X[base + v] = 0.0f;
+    }
+
+    // 3. GENERACIÓN DE LA ETIQUETA Y (Ecuación objetivo)
+    for (int i = 0; i < sizey; i++) {
+        base = i * n_vars;
         float x0 = X[base + 0];
         float x1 = X[base + 1];
-        float x2 = X[base + 2];
 
-        y[i] = sinf(x0) + (x1 * x2) - logf(x0 + 1.0f);
+        /* * Nota: 1 / (1 + x^-4) es matemáticamente igual a: x^4 / (x^4 + 1)
+         * Usamos esta forma porque es más estable si x0 o x1 valen 0.
+         */
+        float x0_2 = x0 * x0;
+        float x0_4 = x0_2 * x0_2;
+        
+        float x1_2 = x1 * x1;
+        float x1_4 = x1_2 * x1_2;
+
+        y[i] = (x0_4 / (x0_4 + 1.0f)) + (x1_4 / (x1_4 + 1.0f));
     }
+
     
     int n_leaves = powf(2, height - 1);
     OperatorType *best_operations = (OperatorType *)malloc((n_leaves - 1) * sizeof(OperatorType));
@@ -61,6 +85,8 @@ int main(int argc, char **argv) {
     free(best_operations);
     free(best_terminals);
     free(best_consts);
+    free(X);
+    free(y);
 
     return 0;
 }

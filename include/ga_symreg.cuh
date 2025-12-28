@@ -48,6 +48,7 @@ struct Operation{
     float *consts;
     float fitness;
 };
+
 /**
  * @brief Executes the main Symbolic Regression engine using Genetic Programming on GPU.
  * * This function coordinates the full evolutionary cycle: initializes the population in VRAM,
