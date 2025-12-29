@@ -13,7 +13,9 @@ class Solution(ctypes.Structure):
     ]
 
 class CUDASymbolicRegressor:
-    def __init__(self, lib_path="./bin/libgasymreg.so"):
+    def __init__(self):
+        _current_dir = os.path.dirname(__file__)
+        lib_path = os.path.join(_current_dir, "bin", "libgasymreg.so")
         if not os.path.exists(lib_path):
             raise FileNotFoundError(f"No se encontró la librería en {lib_path}")
         

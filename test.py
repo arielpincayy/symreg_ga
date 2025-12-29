@@ -19,7 +19,7 @@ def generate_pagie_data(n_samples=400):
 def main():
     # 1. Instanciar el regresor
     # Asegúrate de que la ruta a libgasymreg.so sea correcta
-    regressor = CUDASymbolicRegressor(lib_path="./bin/libgasymreg.so")
+    regressor = CUDASymbolicRegressor()
 
     # 2. Preparar Datos
     print("📊 Generando datos de Pagie...")
