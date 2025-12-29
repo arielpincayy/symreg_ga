@@ -4,27 +4,15 @@ using namespace std;
 
 __device__ __constant__ OperatorType d_operators[] = { ADD, SUB, MUL, DIV, SIN, COS, ABS, POW, LOG, EXP, NOP };
 
-__device__ __constant__ float d_cdf_ops[] = {
-    0.24f, // ADD (0.24)
-    0.48f, // SUB (0.24 + 0.24)
-    0.72f, // MUL (0.48 + 0.24)
-    0.96f, // DIV (0.72 + 0.24)
-    0.96f, // SIN (Probabilidad 0: el salto es cero)
-    0.96f, // COS (Probabilidad 0)
-    0.96f, // ABS (Probabilidad 0)
-    0.96f, // POW (Probabilidad 0)
-    0.96f, // LOG (Probabilidad 0)
-    0.96f, // EXP (Probabilidad 0)
-    1.00f  // NOP (0.96 + 0.04)
-};
-
 __device__ 
-Individual::Individual(int len, int nleaves, int h, int n_vars, curandState *localState, OperatorType *poolOP, int *poolTerminals, float *poolConsts){
+Individual::Individual(int len, int nleaves, int h, int n_vars, curandState *localState, OperatorType *poolOP, int *poolTerminals, float *poolConsts, float *cdf_op){
     height = h;
     nvars = n_vars;
     fitness = 0.0f;
     length = len;
     n_leaves = nleaves;
+
+    for(int i=0; i<NUM_OPERATORS; i++) cdf[i] = cdf_op[i];
     int n_ops = n_leaves - 1;
 
 
@@ -33,7 +21,7 @@ Individual::Individual(int len, int nleaves, int h, int n_vars, curandState *loc
     genome.constants = poolConsts;
 
     for (int i = 0; i < n_ops; i++) {
-        genome.op[i] = d_operators[weighted_selection(localState, d_cdf_ops, NUM_OPERATORS)];
+        genome.op[i] = d_operators[weighted_selection(localState, cdf, NUM_OPERATORS)];
     }
 
     float prob_variable = 0.5f;
@@ -69,7 +57,7 @@ Individual::Individual(int len, int nleaves, int h, int n_vars, OperatorType *po
     genome.terminals = poolTerminals;
 }
 
-__device__ int Individual::weighted_selection(curandState *state, float *cdf, int num_elements) {
+__device__ int Individual::weighted_selection(curandState *state, const float *cdf, int num_elements) {
     float r = curand_uniform(state);
     for (int i = 0; i < num_elements; i++) {
         if (r < cdf[i]) {
@@ -86,9 +74,13 @@ float Individual::fun(float a, float b, OperatorType op){
         case ADD: return a + b;
         case SUB: return a - b;
         case MUL: return a * b;
-        case POW:
-        if (a < 0 && fabsf(b - roundf(b)) > 1e-6) return 0.0f;
-        return powf(a, b);
+        case POW: {
+            float base = fabsf(a);
+            if (base < 1e-4f && b < 0) return 1.0f;
+            float res = powf(base, b);
+            if (isnan(res) || isinf(res)) return a;
+            return res;
+        }
         case DIV:
         if (fabsf(b) < 1e-6f) return INFINITY;
         return a / b;
@@ -146,7 +138,7 @@ void Individual::mutate(int n_mutate, curandState *localState){
         op   = curand(localState) % (n_leaves - 1);
 
         if (p < 0.33f) {
-            genome.op[op] = d_operators[weighted_selection(localState, d_cdf_ops, NUM_OPERATORS)];
+            genome.op[op] = d_operators[weighted_selection(localState, cdf, NUM_OPERATORS)];
         }
         else if (p < 0.66f) {
             float noise = curand_normal(localState) * sigma;

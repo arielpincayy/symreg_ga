@@ -59,7 +59,7 @@ __device__ float eval(Individual *population, int sizeX, int sizey, int idx, flo
  * @note Launch configuration: sufficient threads to cover population_size
  */
 __global__ void create_population(Individual *output, int population_size, float *X, float *y, curandState *states, OperatorType *poolOP, int *poolTerminals, 
-                                  float *poolConsts, int height, int n_vars, int n_ops, int n_leaves, int length, unsigned long long seed, 
+                                  float *poolConsts, float *cdf, int height, int n_vars, int n_ops, int n_leaves, int length, unsigned long long seed, 
                                   int sizeX, int sizey);
 
 /**
@@ -199,6 +199,7 @@ __global__ void extract_fitness(Individual *population, float *fitness_keys, int
  * @param poolOP Memory pool for operators
  * @param poolTerminals Memory pool for terminals
  * @param poolConsts Memory pool for constants
+ * @param cdf Array of cumulative probabilities (must end in 1.0).
  * @param height Tree height
  * @param n_vars Number of input variables
  * @param n_ops Number of operators per tree
@@ -213,6 +214,6 @@ __global__ void extract_fitness(Individual *population, float *fitness_keys, int
  * @note Only threads with idx >= start_idx perform replacement
  */
 __global__ void fill_random(Individual *population, int population_size, float random_rate, curandState *states, OperatorType *poolOP, int *poolTerminals, 
-                            float *poolConsts, int height, int n_vars, int n_ops, int n_leaves, int length, int sizeX, int sizey, float *X, float *y);
+                            float *poolConsts, float *cdf, int height, int n_vars, int n_ops, int n_leaves, int length, int sizeX, int sizey, float *X, float *y);
 
 #endif

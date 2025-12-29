@@ -49,9 +49,22 @@ int main(int argc, char **argv) {
         y[i] = (x0_4 / (x0_4 + 1.0f)) + (x1_4 / (x1_4 + 1.0f));
     }
 
+    float *cdf = (float *)malloc(NUM_OPERATORS*sizeof(float));
 
-    Operation best = genetic_sym(X, y, sizeX, sizey, n_generations, n_individuals, height, n_vars, tournament_size, reproduc_rate, mut_rate, random_rate, 
-                                 windowsize, write_indiv);
+    cdf[0] = 0.20f; // ADD (20%)
+    cdf[1] = 0.40f; // SUB (20%)
+    cdf[2] = 0.68f; // MUL (28%)
+    cdf[3] = 0.96f; // DIV (28%)
+    cdf[4] = 0.96f; // SIN (0%)
+    cdf[5] = 0.96f; // COS (0%)
+    cdf[6] = 0.96f; // ABS (0%)
+    cdf[7] = 0.96f; // POW (0% - ¡FUERA!)
+    cdf[8] = 0.96f; // LOG (0%)
+    cdf[9] = 0.96f; // EXP (0%)
+    cdf[10] = 1.00f;  // NOP (4%)
+
+    Operation best = genetic_sym(X, y, sizeX, sizey, cdf, n_generations, n_individuals, height, n_vars, tournament_size, reproduc_rate, mut_rate, random_rate, 
+                                 windowsize);
 
     float best_fitness = best.fitness;
     int n_leaves = powf(2, height - 1);
@@ -61,6 +74,7 @@ int main(int argc, char **argv) {
 
     free(X);
     free(y);
+    free(cdf);
 
     return 0;
 }

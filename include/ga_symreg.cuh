@@ -6,8 +6,6 @@
 #include <utils.h>
 #include <iostream>
 #include <cub/cub.cuh>
-#include <fstream>
-#include <sstream>
 
 
 /**
@@ -58,6 +56,7 @@ struct Operation{
  * @param y Target values (labels/ground truth).
  * @param sizeX Total size of the X array (samples * variables).
  * @param sizey Total number of samples (rows).
+ * @param cdf Array of cumulative probabilities (must end in 1.0).
  * @param n_generations Maximum number of evolutionary iterations.
  * @param n_individuals Population size (total number of individuals).
  * @param height Maximum allowed height for the expression trees.
@@ -67,11 +66,10 @@ struct Operation{
  * @param mut_rate Mutation probability (value between 0.0 and 1.0).
  * @param random_rate Immigration rate (percentage of new random individuals per generation).
  * @param windowsize Size of the fitness window used for stagnation detection.
- * @param write_indiv Boolean flag to enable/disable logging population to disk.
  * @return Operation Structure containing the best fitness and pointers to the winner's genes.
  */
-Operation genetic_sym(float *X, float *y, int sizeX, int sizey, int n_generations, int n_individuals, int height, int n_vars, int tournament_size, float reproduc_rate,
-                      float mut_rate, float random_rate, int windowsize, bool write_indiv);
+Operation genetic_sym(float *X, float *y, int sizeX, int sizey, float *cdf, int n_generations, int n_individuals, int height, int n_vars, int tournament_size, 
+                      float reproduc_rate, float mut_rate, float random_rate, int windowsize);
 
 
 

@@ -21,7 +21,7 @@ extern __device__ __constant__ float d_cdf_ops[];
 
 #define MAX_VALUES 256
                                   
-const int NUM_OPERATORS = 9;
+const int NUM_OPERATORS = 11;
 const float MIN_CONST = -1.0f;
 const float MAX_CONST = 1.0f;
 
@@ -45,6 +45,7 @@ public:
     int height;
     int nvars;
     int n_leaves;
+    float cdf[NUM_OPERATORS];
     Genome genome;
 
     /**
@@ -53,7 +54,7 @@ public:
      * @param n_vars Variables number (ej. 1 for 'X', 2 for 'X' and 'Y').
      */
     __device__ 
-    Individual(int len, int nleaves, int h, int n_vars, curandState *localState, OperatorType *poolOP, int *poolTerminals, float *poolConsts);
+    Individual(int len, int nleaves, int h, int n_vars, curandState *localState, OperatorType *poolOP, int *poolTerminals, float *poolConsts, float *cdf_op);
     
     __device__
     Individual(int len, int nleaves, int h, int n_vars, OperatorType *poolOP, int *poolTerminals, float *poolConsts);
@@ -76,7 +77,7 @@ private:
      * @return int The selected index.
      */
     __device__ 
-    int weighted_selection(curandState *state, float *cdf, int num_elements);
+    int weighted_selection(curandState *state, const float *cdf, int num_elements);
 
 public:
     /**

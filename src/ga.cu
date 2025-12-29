@@ -22,7 +22,7 @@ __device__ float eval(Individual *population, int sizeX, int sizey, int idx, flo
 }
 
 __global__ void create_population(Individual *output, int population_size, float *X, float *y, curandState *states, OperatorType *poolOP, 
-                                  int *poolTerminals, float *poolConsts, int height, int n_vars, int n_ops, int n_leaves, int length,
+                                  int *poolTerminals, float *poolConsts, float *cdf, int height, int n_vars, int n_ops, int n_leaves, int length,
                                   unsigned long long seed, int sizeX, int sizey) {
 
     size_t idx = blockIdx.x*blockDim.x + threadIdx.x;
@@ -31,7 +31,7 @@ __global__ void create_population(Individual *output, int population_size, float
 
     curand_init(seed, idx, 0, &states[idx]);
 
-    Individual ind(length, n_leaves, height, n_vars, &states[idx], &poolOP[idx * n_ops], &poolTerminals[idx * n_leaves], &poolConsts[idx * n_leaves]);
+    Individual ind(length, n_leaves, height, n_vars, &states[idx], &poolOP[idx * n_ops], &poolTerminals[idx * n_leaves], &poolConsts[idx * n_leaves], cdf);
 
     output[idx].clone_from(ind, &poolOP[idx * n_ops], &poolTerminals[idx * n_leaves], &poolConsts[idx * n_leaves]);
     output[idx].fitness = eval(output, sizeX, sizey, idx, X, y);
@@ -136,7 +136,7 @@ __global__ void evaluation(Individual *population, int population_size, float *X
 }
 
 __global__ void fill_random(Individual *population, int population_size, float random_rate, curandState *states, OperatorType *poolOP, 
-    int *poolTerminals, float *poolConsts, int height, int n_vars, int n_ops, int n_leaves, int length, int sizeX, int sizey, float *X, float *y) {
+    int *poolTerminals, float *poolConsts, float *cdf, int height, int n_vars, int n_ops, int n_leaves, int length, int sizeX, int sizey, float *X, float *y) {
     size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     
     if (idx >= population_size) return;
@@ -148,7 +148,7 @@ __global__ void fill_random(Individual *population, int population_size, float r
 
     curandState localState = states[idx];
 
-    Individual ind(length, n_leaves, height, n_vars, &localState, &poolOP[idx * n_ops], &poolTerminals[idx * n_leaves], &poolConsts[idx * n_leaves]);
+    Individual ind(length, n_leaves, height, n_vars, &localState, &poolOP[idx * n_ops], &poolTerminals[idx * n_leaves], &poolConsts[idx * n_leaves], cdf);
 
     population[idx].clone_from(ind, &poolOP[idx * n_ops], &poolTerminals[idx * n_leaves], &poolConsts[idx * n_leaves]);
     population[idx].fitness = eval(population, sizeX, sizey, idx, X, y);
